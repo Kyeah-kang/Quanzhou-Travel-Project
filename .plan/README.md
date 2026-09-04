@@ -12,8 +12,10 @@
 
 ## 教学与开发约定（摘要）
 
-- **模式**：每天一个模块 → 讲透 → 亲手敲 → 运行验证 → 复述掌握。不求多，求掌握。
+- **角色分工**：**Claude Code = 规划 / 架构 / 评审 / 老师**；**Codex = 代码实现**（先读根目录 `AGENTS.md` 再写）；**学生 = 亲手敲一遍 + 费曼复述**。
+- **模式**：每天一个模块（见 `schedule.md`）→ Codex 按 `AGENTS.md` 实现 → 老师带学生逐段 review + 讲解 → 运行验证 → 复述掌握。不求多，求掌握。
+- **注释规范**：只为主要逻辑/关键代码/非显而易见处写中文注释，**不为每行写**；docstring 说明职责（详见 `AGENTS.md` §2.1）。
 - **提交规范**：`feat|mod|fix|docs|test: 模块DNN-简述`；每晚一个提交点；每里程碑打 tag（`m1-auth` …）。
 - **讲解格式**：要解决的问题 → 设计取舍 → 逐行读代码 → 数据流/调用链 → 运行验证 → 思考题。
 - **进度容错**：周日 + 国庆共 15 天缓冲；落后用缓冲日消化，不往后堆叠。
-- 架构与目录：见 [`docs/architecture.md`](../docs/architecture.md)；项目对外介绍见 [`README.md`](../README.md)。
+- 约束与手册：编码红线 [`AGENTS.md`](../AGENTS.md)、Claude 架构/教学手册 [`CLAUDE.md`](../CLAUDE.md)、架构细节 [`docs/architecture.md`](../docs/architecture.md)。

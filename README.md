@@ -64,6 +64,8 @@ cd frontend && npm install && npm run dev
 
 - 开发课表与进度：[`.plan/schedule.md`](.plan/schedule.md)
 - 架构设计：[`docs/architecture.md`](docs/architecture.md)
+- 编码 Agent（Codex）契约：[`AGENTS.md`](AGENTS.md)
+- Claude Code 项目手册（架构/模块/原则/分层）：[`CLAUDE.md`](CLAUDE.md)
 
 ## 📌 说明
 
