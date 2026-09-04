@@ -1,0 +1,52 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: citong-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-citong_dev_change_me}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-citong}
+      MYSQL_USER: ${MYSQL_USER:-citong}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-citong_dev_change_me}
+    # 宿主机 3306 被本机原生 MySQL(MySQL82)占用 → 容器映射到 3307，两套并存
+    # （M1 起 backend 连本库用 127.0.0.1:3307）
+    ports:
+      - "3307:3306"
+    # 业务库统一 utf8mb4，保证中文与 emoji 可存
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      # $$ 是 compose 转义，容器内会展开为环境变量值
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u$$MYSQL_USER -p$$MYSQL_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: citong-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-citong}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-citong_dev_change_me}
+      POSTGRES_DB: ${POSTGRES_DB:-citong}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      # 初始化脚本只在空卷首次启动时执行
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  mysql_data:
+  pg_data:
