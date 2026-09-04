@@ -125,3 +125,4 @@ React(UI) ──HTTP/JSON·SSE──▶ FastAPI(API) ──▶ services
 ## 10. 决策日志（追加记录，写明日期）
 
 - 2026-09-04（D01）：确定项目定位/技术栈/课表；约定协作模式（Codex 实现 + Claude 规划/评审/教学）；前端选 React+Vite，部署先本机 docker-compose 后期再定，语料由 Claude 协助构建；Embedding 用硅基流动 bge-m3（DeepSeek 无官方 embedding）；DB 用 SQLAlchemy 2.0 同步起步，repository 分层保留升级 async 空间。
+- 2026-09-04（D02 review）：宿主 3306 被本机原生 MySQL(MySQL82 服务)占用、学生旧项目数据也在其上、需两库并存 → **docker mysql 映射改 3307:3306**，偏离简报的 3306（M1 起 backend 连本库用 127.0.0.1:3307，`.env` 与后续文档记得对齐）；postgres 保持 5432。原生 MySQL82 保留给旧项目，不卸载。

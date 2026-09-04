@@ -21,7 +21,7 @@
 | D# | 日期 | 里程碑 | 今日主题 / 讲解重点 | 状态 |
 |---|---|---|---|---|
 | D01 | 9/4 (五) | M0 | 项目总纲/架构全景/选型理由；git init + README + .gitignore + 建 .plan；Monorepo 与 Git 工作流 | ✅ |
-| D02 | 9/7 (一) | M0 | Docker/compose 入门：起 mysql:8 与 pgvector:pg16；镜像/卷/网络/健康检查 | ⬜ |
+| D02 | 9/7 (一) | M0 | Docker/compose 入门：起 mysql:8 与 pgvector:pg16；镜像/卷/网络/健康检查 | ✅ |
 | D03 | 9/8 (二) | M0 | FastAPI 骨架：app 工厂 + .env(pydantic-settings) + CORS + /api/health + 日志 | ⬜ |
 | D04 | 9/9 (三) | M1 | SQLAlchemy 2.0：engine/session/Base + users 表；同步 vs 异步取舍 | ⬜ |
 | D05 | 9/10 (四) | M1 | 全表建模 + Alembic 迁移：users/sessions/messages/itineraries/heritage_sites/favorites | ⬜ |
