@@ -75,13 +75,13 @@
 ## 4. 构建 / 测试命令（规范入口，随脚手架更新）
 
 ```powershell
-# 后端
+# 后端（uv 管理；uv.lock 需提交，锁版本供可复现）
 cd backend
-python -m venv .venv && .\.venv\Scripts\Activate.ps1
-pip install -e ".[dev]"          # 开发依赖
-uvicorn app.main:app --reload    # 开发服务器 http://127.0.0.1:8000
-pytest                           # 测试
-ruff check .                     # 静态检查
+uv sync --extra dev                     # 首次/依赖变动：装 pyproject 全部依赖，生成/更新 uv.lock
+uv run uvicorn app.main:app --reload    # 开发服务器 http://127.0.0.1:8000
+uv run pytest                           # 测试
+uv run ruff check .                     # 静态检查
+# 旧等价（pip/venv，二选一）：python -m venv .venv && .\.venv\Scripts\Activate.ps1 → pip install -e ".[dev]"
 
 # 前端
 cd frontend
