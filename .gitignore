@@ -40,3 +40,7 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
+
+# ================= Claude Code（本地个人配置，不入库） =================
+.claude/settings.local.json
+.claude/scheduled_tasks.json

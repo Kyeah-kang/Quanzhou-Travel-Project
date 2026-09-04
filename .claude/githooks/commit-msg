@@ -1,0 +1,40 @@
+#!/bin/sh
+# commit-msg —— 把 AGENTS.md §6 / schedule 的提交规范（`类型: 模块DNN-简述`）机械强制。
+# 只用 POSIX sh 内建（read / case），不依赖 sed/grep，任何环境下都可用。
+# 依赖：仓库级 `git config core.hooksPath .claude/githooks`（见 .claude/README.md）。
+# 类型白名单取 AGENTS.md §6：feat | mod | fix | docs | test；merge / revert 系统提交放行。
+# 紧急豁免：git commit --no-verify
+
+MSG_FILE="$1"
+
+# 取首行作为 subject
+IFS= read -r SUBJECT < "$MSG_FILE" || SUBJECT=""
+
+# merge / revert 等 git 自动生成的提交放行
+case "$SUBJECT" in
+  Merge*|Revert*) exit 0 ;;
+esac
+
+# 1) 类型白名单
+case "$SUBJECT" in
+  feat:*|mod:*|fix:*|docs:*|test:*)
+    ;;
+  *)
+    echo "✖ 提交规范（AGENTS.md §6）：首行应为 '类型: 简述'，类型取 feat|mod|fix|docs|test"
+    echo "  实际首行：$SUBJECT"
+    echo "  紧急豁免：git commit --no-verify"
+    exit 1
+    ;;
+esac
+
+# 2) 摘要需带模块标记 模块DNN
+case "$SUBJECT" in
+  *模块D[0-9]*)
+    ;;
+  *)
+    echo "✖ 缺少模块标记：摘要应形如 'feat: 模块D05-新增注册接口'（模块DNN）"
+    exit 1
+    ;;
+esac
+
+exit 0

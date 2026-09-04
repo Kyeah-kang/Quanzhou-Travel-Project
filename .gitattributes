@@ -1,0 +1,4 @@
+# 仓库级 git 属性
+# 关键：Windows 检出默认可能把 LF 换成 CRLF，会破坏 sh 脚本的 shebang 与 case 匹配。
+# 因此 .claude 下的 git 钩子脚本固定按 LF 存储与检出。
+.claude/githooks/commit-msg text eol=lf
