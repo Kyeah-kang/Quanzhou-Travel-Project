@@ -44,7 +44,7 @@
 
 ```bash
 # 后端（本地开发）
-cd backend && pip install -e ".[dev]" && uvicorn app.main:app --reload
+cd backend && python -m pip install -e ".[dev]" && python -m uvicorn app.main:app --reload
 
 # 前端（本地开发）
 cd frontend && npm install && npm run dev
