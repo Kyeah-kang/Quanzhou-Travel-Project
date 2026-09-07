@@ -8,4 +8,5 @@ engine = create_engine(
     settings.mysql_dsn,
     pool_pre_ping=True,
     echo=settings.debug,
+    hide_parameters=True,
 )
