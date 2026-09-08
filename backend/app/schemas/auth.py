@@ -19,3 +19,18 @@ class RegisterIn(BaseModel):
 
 
 RegisterOut = UserOut
+
+
+class LoginIn(BaseModel):
+    """登录请求参数。"""
+
+    username: str
+    password: str
+
+
+class LoginOut(BaseModel):
+    """登录成功后返回的访问令牌信息。"""
+
+    access_token: str
+    token_type: str = "bearer"
+    expires_in: int

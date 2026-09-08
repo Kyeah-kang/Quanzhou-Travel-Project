@@ -3,6 +3,7 @@
 from pathlib import Path
 from urllib.parse import quote_plus
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
@@ -22,6 +23,9 @@ class Settings(BaseSettings):
     mysql_user: str = "citong"
     mysql_password: str = ""
     mysql_database: str = "citong"
+    jwt_secret: str = Field(min_length=32, validation_alias="SECRET_KEY")
+    jwt_algorithm: str = "HS256"
+    access_token_expire_minutes: int = Field(default=30, gt=0)
 
     model_config = SettingsConfigDict(
         env_file=REPOSITORY_ROOT / ".env",
