@@ -1,4 +1,4 @@
-"""提供密码哈希与校验功能。"""
+"""提供密码哈希与 JWT 签发、校验功能。"""
 
 from datetime import datetime, timedelta, timezone
 
