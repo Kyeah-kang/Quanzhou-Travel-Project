@@ -1,104 +1,111 @@
 """注册接口的成功、冲突和输入校验测试。"""
 
-from uuid import uuid4
+from collections.abc import Callable
 
 import bcrypt
 from fastapi.testclient import TestClient
-from sqlalchemy import delete, select
+from sqlalchemy import select
 
 from app.db.session import SessionLocal
-from app.main import app
 from app.models.user import User
 
-client = TestClient(app)
 
-
-def unique_identity() -> tuple[str, str]:
-    """生成可重复执行测试所需的唯一用户名和邮箱。"""
-
-    suffix = uuid4().hex[:12]
-    return f"test_{suffix}", f"test_{suffix}@example.com"
-
-
-def remove_user(username: str) -> None:
-    """删除测试用户，避免测试数据持续污染开发库。"""
-
-    with SessionLocal() as db:
-        db.execute(delete(User).where(User.username == username))
-        db.commit()
-
-
-def test_register_success_persists_bcrypt_hash() -> None:
+def test_register_success_persists_bcrypt_hash(
+    client: TestClient,
+    user_factory: Callable[..., object],
+) -> None:
     """注册成功应返回公开字段，并在数据库保存可验证的 bcrypt 哈希。"""
 
-    username, email = unique_identity()
-    try:
-        response = client.post(
-            "/api/auth/register",
-            json={"username": username, "email": email.upper(), "password": "secret123"},
+    user = user_factory(register=False)
+    assert hasattr(user, "username")
+    assert hasattr(user, "email")
+    assert hasattr(user, "password")
+    username = user.username
+    email = user.email
+    password = user.password
+    response = client.post(
+        "/api/auth/register",
+        json={"username": username, "email": email.upper(), "password": password},
+    )
+
+    assert response.status_code == 201
+    body = response.json()
+    assert body["username"] == username
+    assert body["email"] == email
+    assert "hashed_password" not in body
+    assert "password" not in body
+
+    with SessionLocal() as db:
+        saved_user = db.scalar(select(User).where(User.username == username))
+        assert saved_user is not None
+        assert saved_user.hashed_password.startswith("$2b$")
+        assert bcrypt.checkpw(
+            password.encode("utf-8"),
+            saved_user.hashed_password.encode("utf-8"),
         )
 
-        assert response.status_code == 201
-        body = response.json()
-        assert body["username"] == username
-        assert body["email"] == email
-        assert "hashed_password" not in body
-        assert "password" not in body
 
-        with SessionLocal() as db:
-            user = db.scalar(select(User).where(User.username == username))
-            assert user is not None
-            assert user.hashed_password.startswith("$2b$")
-            assert bcrypt.checkpw(b"secret123", user.hashed_password.encode("utf-8"))
-    finally:
-        remove_user(username)
+def test_register_without_email_returns_null_email(
+    client: TestClient,
+    user_factory: Callable[..., object],
+) -> None:
+    """email 是可选字段，省略时接口应返回 null。"""
+
+    user = user_factory(register=False, include_email=False)
+    assert hasattr(user, "username")
+    assert hasattr(user, "password")
+    response = client.post(
+        "/api/auth/register",
+        json={"username": user.username, "password": user.password},
+    )
+
+    assert response.status_code == 201
+    assert response.json()["email"] is None
 
 
-def test_duplicate_username_returns_conflict() -> None:
+def test_duplicate_username_returns_conflict(
+    client: TestClient,
+    user_factory: Callable[..., object],
+) -> None:
     """重复用户名应返回 409，而不是暴露数据库异常。"""
 
-    username, email = unique_identity()
-    _, other_email = unique_identity()
-    try:
-        first = client.post(
-            "/api/auth/register",
-            json={"username": username, "email": email, "password": "secret123"},
-        )
-        second = client.post(
-            "/api/auth/register",
-            json={"username": username, "email": other_email, "password": "secret123"},
-        )
+    first_user = user_factory()
+    second_user = user_factory(register=False)
+    second = client.post(
+        "/api/auth/register",
+        json={
+            "username": first_user.username,
+            "email": second_user.email,
+            "password": second_user.password,
+        },
+    )
 
-        assert first.status_code == 201
-        assert second.status_code == 409
-        assert "用户名" in second.json()["detail"]
-    finally:
-        remove_user(username)
+    assert second.status_code == 409
+    assert "用户名" in second.json()["detail"]
 
 
-def test_duplicate_email_returns_conflict() -> None:
+def test_duplicate_email_returns_conflict(
+    client: TestClient,
+    user_factory: Callable[..., object],
+) -> None:
     """重复邮箱应返回 409。"""
 
-    username, email = unique_identity()
-    other_username, _ = unique_identity()
-    try:
-        first = client.post(
-            "/api/auth/register",
-            json={"username": username, "email": email, "password": "secret123"},
-        )
-        second = client.post(
-            "/api/auth/register",
-            json={"username": other_username, "email": email.upper(), "password": "secret123"},
-        )
+    first_user = user_factory()
+    second_user = user_factory(register=False)
+    second = client.post(
+        "/api/auth/register",
+        json={
+            "username": second_user.username,
+            "email": first_user.email.upper(),
+            "password": second_user.password,
+        },
+    )
 
-        assert first.status_code == 201
-        assert second.status_code == 409
-        assert "邮箱" in second.json()["detail"]
-    finally:
-        remove_user(username)
+    assert second.status_code == 409
+    assert "邮箱" in second.json()["detail"]
 
 
-def test_invalid_register_payload_returns_unprocessable_entity() -> None:
+def test_invalid_register_payload_returns_unprocessable_entity(client: TestClient) -> None:
     """短密码、非法用户名和坏邮箱都应由 Pydantic 返回 422。"""
 
     invalid_payloads = (
