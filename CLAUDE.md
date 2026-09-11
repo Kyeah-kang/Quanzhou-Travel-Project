@@ -67,7 +67,7 @@ React(UI) ──HTTP/JSON·SSE──▶ FastAPI(API) ──▶ services
 | 里程碑 | 模块 | 日期 | Tag | 状态 |
 |---|---|---|---|---|
 | M0 启动与环境 | D01–D03 | 9/4–9/8 | — | D01 ✅ |
-| M1 MySQL 数据层+认证 | D04–D10 | 9/9–9/16 | `m1-auth` | ⬜ |
+| M1 MySQL 数据层+认证 | D04–D10 | 9/9–9/16 | `m1-auth` | ✅ |
 | M2 知识库数据工程 | D11–D19 | 9/17–9/26 | `m2-knowledge` | ⬜ |
 | M3 RAG 问答闭环 | D20–D24 | 9/28–10/10 | `m3-qa` | ⬜ |
 | M4 React 前端 | D25–D31 | 10/12–10/19 | `m4-frontend` | ⬜ |
