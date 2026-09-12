@@ -3,11 +3,13 @@
 import re
 import sys
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
-from app.rag.corpus import CorpusDocument, iter_corpus_documents, load_corpus_document
+import yaml
+
+from app.rag.corpus import CorpusDocument, load_corpus_document
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_CORPUS_DIR = REPOSITORY_ROOT / "data" / "raw_md"
@@ -117,6 +119,8 @@ def _is_number(value: Any) -> bool:
 def _is_iso_date(value: Any) -> bool:
     """判断日期字段是否符合 YYYY-MM-DD。"""
 
+    if isinstance(value, datetime):
+        return False
     if isinstance(value, date):
         return True
     if not isinstance(value, str):
@@ -248,7 +252,7 @@ def validate_file(path: Path) -> ValidationResult:
 
     try:
         document = load_corpus_document(path)
-    except (OSError, ValueError) as exc:
+    except (OSError, ValueError, yaml.YAMLError) as exc:
         return ValidationResult(path=path, errors=(str(exc),))
     return ValidationResult(path=path, errors=tuple(validate_document(document)))
 
@@ -257,8 +261,9 @@ def check_corpus(corpus_dir: Path = DEFAULT_CORPUS_DIR) -> list[ValidationResult
     """校验目录内全部 Markdown 语料并按文件名排序返回结果。"""
 
     results: list[ValidationResult] = []
-    for document in iter_corpus_documents(corpus_dir):
-        results.append(ValidationResult(document.path, tuple(validate_document(document))))
+    for path in sorted(corpus_dir.glob("*.md")):
+        if not path.name.startswith("_"):
+            results.append(validate_file(path))
     return results
 
 

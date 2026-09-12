@@ -41,6 +41,31 @@ def test_parser_returns_frontmatter_and_body() -> None:
     assert document.content.startswith("## 概述")
 
 
+def test_malformed_yaml_returns_structured_failure(tmp_path: Path) -> None:
+    """YAML 语法错误应转为失败结果，而不是向上抛异常。"""
+
+    path = tmp_path / "broken_yaml.md"
+    path.write_text("---\nname: [未闭合\n---\n", encoding="utf-8")
+
+    result = validate_file(path)
+
+    assert not result.ok
+    assert result.errors
+
+
+def test_check_corpus_continues_after_malformed_file(tmp_path: Path) -> None:
+    """目录中存在坏文件时，批量校验仍应返回结构化失败结果。"""
+
+    path = tmp_path / "broken_yaml.md"
+    path.write_text("---\nname: [未闭合\n---\n", encoding="utf-8")
+
+    results = check_corpus(tmp_path)
+
+    assert len(results) == 1
+    assert not results[0].ok
+    assert results[0].errors
+
+
 def test_missing_required_field_fails(tmp_path: Path) -> None:
     """缺少必填字段不能通过。"""
 
@@ -102,6 +127,23 @@ def test_source_and_pending_fields_must_be_consistent(tmp_path: Path) -> None:
     assert not result.ok
     assert any("accessed 必须是 YYYY-MM-DD" in error for error in result.errors)
     assert any("pending_fields 字段值必须为 null/待校对: lat" in error for error in result.errors)
+
+
+def test_datetime_is_not_accepted_as_date_string(tmp_path: Path) -> None:
+    """带时间的 datetime 值不应冒充合同要求的 YYYY-MM-DD。"""
+
+    path, original = copy_sample(tmp_path)
+    corrupted = original.replace(
+        "    accessed: 2026-09-12",
+        "    accessed: 2026-09-12 10:00:00",
+        1,
+    )
+    path.write_text(corrupted, encoding="utf-8")
+
+    result = validate_file(path)
+
+    assert not result.ok
+    assert any("accessed 必须是 YYYY-MM-DD" in error for error in result.errors)
 
 
 def test_fact_status_and_sections_are_checked(tmp_path: Path) -> None:
