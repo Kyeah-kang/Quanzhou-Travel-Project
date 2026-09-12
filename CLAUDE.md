@@ -126,6 +126,8 @@ React(UI) ──HTTP/JSON·SSE──▶ FastAPI(API) ──▶ services
 
 ## 10. 决策日志（追加记录，写明日期）
 
+- 2026-09-12（D11 后）：**带教深度按「面试相关性」分层，D12/D13 概览、D16–D19 深入**。学生提出「M2 像是纯知识库录入，是否只需总结」——**判据对（按面试会不会问取舍），事实判断错**：M2 九天中纯录入约 2.5 天，其余 6.5 天（D15 评测集设计 / D16 切分实验 / D17 向量库与嵌入管线 / D18 手写检索器 / D19 检索评测）是 RAG 核心工程，且与高频面试题近乎一一对应。故：**D12/D13 只做「1 篇样例走查 + 汇报模板」不逐行讲；D16–D19 必须完整六段带教**（这两段是「不只是调了个 API」的支撑）。完整深度表见 `.plan/modules/M2.md` §12。**概览日降级、深入日升级均须明说理由。**
+
 - 2026-09-05→06：**放弃 uv，最终定为 独立 venv + pip**。试行 uv 后发现与本机工作流不合、Codex 曾把依赖误装进全局 Anaconda base，已卸载——`backend/.venv` 用 `python -m venv` 重建并 `python -m pip install -e ".[dev]"`；**移除 `backend/uv.lock`**（不再维护，commit 一并删除）；运行/测试/静态检查统一 `python -m uvicorn/pytest/ruff`（每个新终端先激活 `.venv`）；**项目依赖不装入全局 base**。上一条「改用 uv」作废，以本条为准。
 
 - 2026-09-04（D01）：确定项目定位/技术栈/课表；约定协作模式（Codex 实现 + Claude 规划/评审/教学）；前端选 React+Vite，部署先本机 docker-compose 后期再定，语料由 Claude 协助构建；Embedding 用硅基流动 bge-m3（DeepSeek 无官方 embedding）；DB 用 SQLAlchemy 2.0 同步起步，repository 分层保留升级 async 空间。
