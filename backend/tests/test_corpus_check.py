@@ -22,13 +22,18 @@ def copy_sample(tmp_path: Path, filename: str = "qingjing_mosque.md") -> tuple[P
     return target, original
 
 
-def test_three_samples_pass_structural_validation() -> None:
-    """D11 三篇样例应全部通过结构校验。"""
+def test_corpus_samples_pass_structural_validation() -> None:
+    """语料目录非空，且每篇文件都应通过结构校验。"""
 
     results = check_corpus(SAMPLE_DIR)
+    failure_details = "\n".join(
+        f"{result.path.name}: {'; '.join(result.errors)}"
+        for result in results
+        if not result.ok
+    )
 
-    assert len(results) == 3
-    assert all(result.ok for result in results)
+    assert results, "语料目录为空，至少应有一篇 Markdown 语料"
+    assert all(result.ok for result in results), f"语料结构校验失败:\n{failure_details}"
 
 
 def test_parser_returns_frontmatter_and_body() -> None:
