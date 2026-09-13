@@ -1,6 +1,7 @@
 """把语料 frontmatter 幂等写入 MySQL 世遗点主数据表。"""
 
 import logging
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -36,8 +37,11 @@ def _source_short(document: CorpusDocument) -> str | None:
         return None
     publisher = str(first.get("publisher", "")).strip()
     title = str(first.get("title", "")).strip()
-    short_source = f"{publisher}《{title}》".strip("《》")
-    return short_source[:255] or None
+    if not title:
+        return publisher[:255] or None
+    publisher = publisher[:253]
+    title_limit = 255 - len(publisher) - 2
+    return f"{publisher}《{title[:title_limit]}》"
 
 
 def _model_values(document: CorpusDocument) -> dict[str, Any]:
@@ -93,15 +97,18 @@ def _print_completeness(documents: list[CorpusDocument]) -> None:
 
     fields = ("lat", "lng", "open_hours", "visit_duration_min", "theme", "notice")
     total = len(documents)
-    logger.info("完整率 v1（总数=%s）", total)
-    logger.info("字段 | 可得数 | 待校对数 | 可得率")
+    lines = [
+        f"完整率 v1（总数={total}）",
+        "字段 | 可得数 | 待校对数 | 可得率",
+    ]
     for field in fields:
         available = sum(
             not _is_pending(document.metadata.get(field)) for document in documents
         )
         pending = total - available
         rate = f"{available / total:.1%}" if total else "0.0%"
-        logger.info("%s | %s | %s | %s", field, available, pending, rate)
+        lines.append(f"{field} | {available} | {pending} | {rate}")
+    sys.stdout.write("\n".join(lines) + "\n")
 
 
 def _is_pending(value: Any) -> bool:
