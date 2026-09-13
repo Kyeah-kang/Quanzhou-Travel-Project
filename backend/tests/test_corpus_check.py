@@ -5,11 +5,40 @@ from pathlib import Path
 import pytest
 
 from app.ingest import corpus_check
-from app.ingest.corpus_check import check_corpus, validate_file
+from app.ingest.corpus_check import (
+    CONTROLLED_CATEGORIES,
+    CONTROLLED_KEY_ELEMENTS,
+    check_corpus,
+    validate_file,
+)
 from app.rag.corpus import load_corpus_document
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 SAMPLE_DIR = REPOSITORY_ROOT / "data" / "raw_md"
+EXPECTED_SITE_KEYS = {
+    "jiuri_shan_qifeng_shike",
+    "qingjing_mosque",
+    "luoyang_bridge",
+    "shibosi_site",
+    "nanwaizongzhengsi_site",
+    "deji_gate_site",
+    "shunji_bridge_site",
+    "jiangkou_dock",
+    "quanzhou_confucian_temple",
+    "tianhou_temple",
+    "zhenwu_temple",
+    "kaiyuan_temple",
+    "islamic_holy_tombs",
+    "caoan_manichaean_statue",
+    "laojun_rock_statue",
+    "anping_bridge",
+    "shihu_dock",
+    "liusheng_pagoda",
+    "wanshou_pagoda",
+    "cizao_kiln_site",
+    "dehua_kiln_site",
+    "anxi_qingyang_iron_smelting_site",
+}
 
 
 def copy_sample(tmp_path: Path, filename: str = "qingjing_mosque.md") -> tuple[Path, str]:
@@ -44,6 +73,19 @@ def test_parser_returns_frontmatter_and_body() -> None:
     assert document.site_key == "qingjing_mosque"
     assert document.metadata["name"] == "清净寺"
     assert document.content.startswith("## 概述")
+
+
+def test_all_22_sites_have_valid_controlled_classification() -> None:
+    """22 个世遗点必须全部进入语料，且分类字段不能越出受控词表。"""
+
+    results = check_corpus(SAMPLE_DIR)
+    site_keys = {result.path.stem for result in results}
+
+    assert site_keys == EXPECTED_SITE_KEYS
+    for result in results:
+        document = load_corpus_document(result.path)
+        assert document.metadata["category"] in CONTROLLED_CATEGORIES
+        assert document.metadata["key_element"] in CONTROLLED_KEY_ELEMENTS
 
 
 def test_malformed_yaml_returns_structured_failure(tmp_path: Path) -> None:

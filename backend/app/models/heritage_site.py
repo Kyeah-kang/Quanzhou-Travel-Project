@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from sqlalchemy import JSON, DateTime, Float, String, func
+from sqlalchemy import JSON, DateTime, Float, Integer, String, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
@@ -20,12 +20,18 @@ class HeritageSite(Base):
     area: Mapped[str] = mapped_column(String(50), index=True, nullable=False)
     category: Mapped[str] = mapped_column(String(50), index=True, nullable=False)
     unesco_group: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    key_element: Mapped[str | None] = mapped_column(String(50), nullable=True)
     lat: Mapped[float | None] = mapped_column(Float, nullable=True)
     lng: Mapped[float | None] = mapped_column(Float, nullable=True)
     address: Mapped[str | None] = mapped_column(String(255), nullable=True)
     open_hours: Mapped[str | None] = mapped_column(String(255), nullable=True)
     tags: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
     intro_short: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    visit_duration_min: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    theme: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
+    notice: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    fact_status: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    pending_fields: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
     source: Mapped[str | None] = mapped_column(String(255), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
